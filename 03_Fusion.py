@@ -39,8 +39,8 @@ class Converter:
         self.temp_entry = Entry(self.temp_frame, font=("Times", "20"))
         self.temp_entry.grid(row=2)
 
-        self.temp_error = Label(self.temp_frame, text="", bg='dark orange')
-        self.temp_error.grid(row=3)
+        self.output_label = Label(self.temp_frame, text="", bg='dark orange')
+        self.output_label.grid(row=3)
 
         self.button_frame = Frame(self.temp_frame)
         self.button_frame.grid(row=4)
@@ -65,24 +65,27 @@ class Converter:
         self.history_button.grid(row=0, column=3, padx=16, pady=16)
 
     def check_temp(self, min_value):
-        error = "Please enter a valid temperature"
-        try:
-            response = self.temp_entry.get()
-            response = float(response)
-            if response < min_value:
-                self.var_has_error.set("yes")
-                self.temp_error.config(text=error)
-            elif response == "":
-                self.var_has_error.set("yes")
-                self.temp_error.config(text=error)
-            else:
-                self.var_has_error.set("no")
-                self.temp_error.config(text="")
-                return response
+        has_error = "no"
+        error = "Please enter a Valid Temperature"
 
+        response = self.temp_entry.get()
+
+        try:
+            response = float(response)
+
+            if response < min_value:
+                has_error = "yes"
         except ValueError:
+            has_error = "yes"
+
+        if has_error == "yes":
             self.var_has_error.set("yes")
-            self.temp_error.config(text=error)
+            self.var_feedback.set(error)
+            return "invalid"
+        else:
+            self.var_has_error.set("no")
+            self.history_button.config(state=NORMAL)
+            return response
 
     def temp_converter(self, min_val):
         to_convert = self.check_temp(min_val)
@@ -91,7 +94,7 @@ class Converter:
         answer = ""
         from_to = ""
 
-        if to_convert != "invalid":
+        if to_convert == "invalid":
             set_feedback = "no"
 
         elif min_val == -459:
@@ -99,7 +102,7 @@ class Converter:
             from_to = "{} F{} is {} C{}"
         else:
             answer = to_convert * 1.8 + 32
-            from_to = "{} F{} is {} C{}"
+            from_to = "{} C{} is {} F{}"
 
         if set_feedback == "yes":
             feedback = from_to.format(to_convert, deg_sign, answer, deg_sign)
@@ -108,16 +111,19 @@ class Converter:
         self.output_answer()
 
     def output_answer(self):
-        self.var_feedback.get()
+        output = self.var_feedback.get()
         has_errors = self.var_has_error.get()
 
         if has_errors == "yes":
             self.temp_entry.config(bg='light pink')
             self.temp_entry.config(fg='red')
-            self.temp_error.config(fg='red')
+            self.output_label.config(fg='red')
         else:
             self.temp_entry.config(bg='white')
             self.temp_entry.config(fg='black')
+            self.output_label.config(fg='black')
+
+        self.output_label.config(text=output)
 
 
 # main routine
